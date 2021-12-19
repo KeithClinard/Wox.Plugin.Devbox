@@ -10,14 +10,18 @@ namespace Wox.Plugin.Devbox.Plugins
   {
     private static readonly string ico = "Prompt.png";
 
-    public static void openResultInVSCode(string result)
+    public static void openResultInVSCode(string result, SettingsModel settings)
     {
-      openVSCode(result);
+      openVSCode(result, settings);
     }
 
-    public static void openVSCode(String folder)
+    public static void openVSCode(String folder, SettingsModel settings)
     {
       String command = $"code {folder}";
+      if (!string.IsNullOrEmpty(settings.wslName) && !string.IsNullOrEmpty(folder))
+      {
+        command = $"code --folder-uri vscode-remote://wsl+{settings.wslName}{folder}";
+      }
 
       ProcessStartInfo info;
       var arguments = $"/c \"{command}\"";
@@ -44,7 +48,7 @@ namespace Wox.Plugin.Devbox.Plugins
             SubTitle = "...or keep typing to search for repositories",
             Action = (e) =>
             {
-              openVSCode("");
+              openVSCode("", settings);
               return true;
             },
             IcoPath = ico
@@ -52,7 +56,12 @@ namespace Wox.Plugin.Devbox.Plugins
         return list;
       }
 
-      string[] results = Directory.GetDirectories(settings.gitFolder, $"*{query.Search}*", SearchOption.TopDirectoryOnly);
+      string searchFolder = settings.gitFolder;
+      if (!string.IsNullOrEmpty(settings.wslName))
+      {
+        searchFolder = $"\\\\wsl$\\{settings.wslName}{settings.gitFolder}";
+      }
+      string[] results = Directory.GetDirectories(searchFolder, $"*{query.Search}*", SearchOption.TopDirectoryOnly);
 
       if (results.Length > 0)
       {
@@ -64,7 +73,13 @@ namespace Wox.Plugin.Devbox.Plugins
               IcoPath = ico,
               Action = (e) =>
               {
-                openResultInVSCode(result);
+                string folderName = result;
+                if (!string.IsNullOrEmpty(settings.wslName))
+                {
+                  folderName = folderName.Replace($"\\\\wsl$\\{settings.wslName}", "");
+                  folderName = folderName.Replace("\\", "/");
+                }
+                openResultInVSCode(folderName, settings);
                 return true;
               }
           });

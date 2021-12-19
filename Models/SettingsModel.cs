@@ -6,5 +6,6 @@ namespace Wox.Plugin.Devbox.Helpers
   {
     public String apiToken { get; set; }
     public String gitFolder { get; set; }
+    public String wslName { get; set; }
   }
 }

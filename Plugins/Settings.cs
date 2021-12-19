@@ -38,6 +38,17 @@ namespace Wox.Plugin.Devbox.Plugins
             },
             IcoPath = ico
         });
+        list.Add(new Result
+        {
+          Title = "Set WSL Distro Name",
+            SubTitle = $"Causes vscode shortcut to use WSL - Currently: \"{settings.wslName}\"",
+            Action = (e) =>
+            {
+              context.API.ChangeQuery("db wslName ");
+              return false;
+            },
+            IcoPath = ico
+        });
 
         // Other sub-plugins
 
@@ -115,6 +126,28 @@ namespace Wox.Plugin.Devbox.Plugins
             Action = (e) =>
             {
               settings.gitFolder = gitFolder;
+              storage.Save();
+              return true;
+            },
+            IcoPath = ico
+        });
+        return list;
+      }
+
+      if ("wslName".Equals(searchStrings[0]))
+      {
+        String wslName = "";
+        if (searchStrings.Length > 1)
+        {
+          wslName = searchStrings[1];
+        }
+        list.Add(new Result
+        {
+          Title = $"Set WSL2 distro to \"{wslName}\"",
+            SubTitle = $"Currently: \"{settings.wslName}\"",
+            Action = (e) =>
+            {
+              settings.wslName = wslName;
               storage.Save();
               return true;
             },
